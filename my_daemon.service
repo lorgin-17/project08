@@ -1,0 +1,11 @@
+[Unit]
+Description=Figlet daemon
+
+[Service]
+User=carvita
+WorkingDirectory=/home/carvita/projects/project08
+ExecStart=/home/carvita/projects/project08/main
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
