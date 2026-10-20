@@ -13,12 +13,12 @@ using namespace std;
 string file_path = "/home/carvita/projects/project08/file.txt";
 
 // функция из методички: запускает команду cmd и возвращает ее вывод строкой
-string exec(string cmd) {
-	array<char, 128> buffer; // буфер для перехвата вывода команды
-	string result;           // сюда соберем полный вывод команды
-	unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose); // создаем процесс
+std::string exec(string cmd) {
+	std::array<char, 128> buffer; // буфер для перехвата вывода команды
+	std::string result;           // сюда соберем полный вывод команды
+	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose); // создаем процесс
 	if (!pipe) {
-		throw runtime_error("popen() failed!");
+		throw std::runtime_error("popen() failed!");
 	}
 	while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) { // пока команда генерит текст
 		result += buffer.data(); // подклеиваем его к result
@@ -69,6 +69,9 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	cout << "-=-=-=-=-=-" << endl
+	     << "ЗАПУСКАЮСЬ" << endl
+	     << "-=-=-=-=-=-" << endl;
 	cout << "мониторю файл " << file_path << endl;
 
 	// демон работает бесконечно
@@ -95,6 +98,13 @@ int main(int argc, char* argv[]) {
 					// всё, что выводим через cout, systemd сохраняет в журнал (journalctl)
 					cout << "файл изменился, новое содержимое:" << endl;
 					cout << text << endl;
+
+					// если в файле написали "Умри" — специально падаем с ошибкой,
+					// чтобы проверить, что systemd перезапустит демона
+					if (text.find("Умри") != string::npos) {
+						cout << "получил команду Умри, падаю" << endl;
+						throw runtime_error("Падаю =ООО");
+					}
 
 					// прогоняем содержимое файла через figlet
 					string art = exec("figlet < \"" + file_path + "\"");
